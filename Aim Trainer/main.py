@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 import pyautogui
-import os
-import datetime
 
 def pil_to_cv2(pil_image):
     open_cv_image = np.array(pil_image)
