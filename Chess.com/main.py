@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import pyautogui
 import os
+import chess
+import chess.engine
 
 def is_square(contour, epsilon=0.02, min_side_length=30, side_length_tolerance=0.1):
     approx = cv2.approxPolyDP(contour, epsilon * cv2.arcLength(contour, True), True)
@@ -168,6 +170,12 @@ if chessboard is not None:
         if col == 7:
             board_array.append(row_pieces)
             row_pieces = []
-    print(get_fen_from_pieces(board_array))
+    FEN = get_fen_from_pieces(board_array)
+    print(FEN)
+    engine = chess.engine.SimpleEngine.popen_uci("stockfish\stockfish-windows-x86-64-avx2.exe")
+    board = chess.Board(FEN)
+    result = engine.play(board, chess.engine.Limit(time=2.0))
+    print(f"Best move: {result.move}")
+    engine.quit()
 else:
     print("Chessboard not found")
