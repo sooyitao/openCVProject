@@ -80,18 +80,18 @@ def save_piece_templates(squares, output_dir="piece_templates"):
 def load_piece_templates():
     template_directory = 'piece_templates/'
     piece_templates = {
-        'white_pawn': cv2.imread(template_directory + 'white_pawn.jpg'),
-        'black_pawn': cv2.imread(template_directory + 'black_pawn.jpg'),
-        'white_knight': cv2.imread(template_directory + 'white_knight.jpg'),
-        'black_knight': cv2.imread(template_directory + 'black_knight.jpg'),
-        'white_bishop': cv2.imread(template_directory + 'white_bishop.jpg'),
-        'black_bishop': cv2.imread(template_directory + 'black_bishop.jpg'),
-        'white_rook': cv2.imread(template_directory + 'white_rook.jpg'),
-        'black_rook': cv2.imread(template_directory + 'black_rook.jpg'),
-        'white_queen': cv2.imread(template_directory + 'white_queen.jpg'),
-        'black_queen': cv2.imread(template_directory + 'black_queen.jpg'),
-        'white_king': cv2.imread(template_directory + 'white_king.jpg'),
-        'black_king': cv2.imread(template_directory + 'black_king.jpg'),
+        'P': cv2.imread(template_directory + 'white_pawn.jpg'),
+        'p': cv2.imread(template_directory + 'black_pawn.jpg'),
+        'N': cv2.imread(template_directory + 'white_knight.jpg'),
+        'n': cv2.imread(template_directory + 'black_knight.jpg'),
+        'B': cv2.imread(template_directory + 'white_bishop.jpg'),
+        'b': cv2.imread(template_directory + 'black_bishop.jpg'),
+        'R': cv2.imread(template_directory + 'white_rook.jpg'),
+        'r': cv2.imread(template_directory + 'black_rook.jpg'),
+        'Q': cv2.imread(template_directory + 'white_queen.jpg'),
+        'q': cv2.imread(template_directory + 'black_queen.jpg'),
+        'K': cv2.imread(template_directory + 'white_king.jpg'),
+        'k': cv2.imread(template_directory + 'black_king.jpg'),
     }
     return piece_templates
 
@@ -100,13 +100,10 @@ def identify_piece(square, piece_templates, threshold=0.8):
 
     for piece_name, template in piece_templates.items():
         template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY) if len(template.shape) == 3 else template
-        # Apply template matching
         result = cv2.matchTemplate(square_gray, template_gray, cv2.TM_CCOEFF_NORMED)
         
-        # Get the maximum similarity value
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
-        # Check if the similarity exceeds the threshold
         if max_val >= threshold:
             return piece_name
 
@@ -136,6 +133,25 @@ def remove_background(myimage):
     
     return finalimage
 
+def get_fen_from_pieces(pieces):
+    fen_rows = []
+    for row in pieces:
+        fen_row = ''
+        empty_count = 0
+        for square in row:
+            if square == 'empty':
+                empty_count += 1
+            else:
+                if empty_count > 0:
+                    fen_row += str(empty_count)
+                    empty_count = 0
+                fen_row += square
+        if empty_count > 0:
+            fen_row += str(empty_count)
+        fen_rows.append(fen_row)
+    
+    return '/'.join(fen_rows)
+
 screenshot = pyautogui.screenshot()
 chessboard = find_chessboard(screenshot)
 if chessboard is not None:
@@ -143,9 +159,15 @@ if chessboard is not None:
     #save_piece_templates(squares)
     piece_templates = load_piece_templates()
     pieces_on_board = identify_all_pieces(squares, piece_templates)
+    board_array = []
+    row_pieces = []
     for i, piece in enumerate(pieces_on_board):
         row = i // 8
-        col = i % 8
-        print(f"Piece at ({row}, {col}): {piece}")
+        col = i % 8 
+        row_pieces.append(piece)
+        if col == 7:
+            board_array.append(row_pieces)
+            row_pieces = []
+    print(get_fen_from_pieces(board_array))
 else:
     print("Chessboard not found")
