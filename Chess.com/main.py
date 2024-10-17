@@ -40,7 +40,7 @@ def find_chessboard(pil_image, min_side_length=100):
     if largest_square_contour is not None:
         x, y, w, h = cv2.boundingRect(largest_square_contour)
         chessboard = image[y:y+h, x:x+w]
-        return chessboard
+        return remove_background(chessboard)
 
 def cut_squares(chessboard):
     height, width = chessboard.shape[:2]
@@ -58,7 +58,7 @@ def cut_squares(chessboard):
             y_end = y_start + square_height
 
             square = chessboard[y_start:y_end, x_start:x_end]
-            squares.append(remove_background(square))
+            squares.append(square)
 
     return squares
 
@@ -98,11 +98,10 @@ def load_piece_templates():
     return piece_templates
 
 def identify_piece(square, piece_templates, threshold=0.8):
-    square_gray = cv2.cvtColor(square, cv2.COLOR_BGR2GRAY) if len(square.shape) == 3 else square
-
+    
     for piece_name, template in piece_templates.items():
-        template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY) if len(template.shape) == 3 else template
-        result = cv2.matchTemplate(square_gray, template_gray, cv2.TM_CCOEFF_NORMED)
+        resized_template = cv2.resize(template, (square.shape[1], square.shape[0]))
+        result = cv2.matchTemplate(square, resized_template, cv2.TM_CCOEFF_NORMED)
         
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
@@ -135,7 +134,7 @@ def remove_background(myimage):
     
     return finalimage
 
-def get_fen_from_pieces(pieces):
+def get_fen_from_pieces(pieces, black = False):
     fen_rows = []
     for row in pieces:
         fen_row = ''
@@ -151,7 +150,8 @@ def get_fen_from_pieces(pieces):
         if empty_count > 0:
             fen_row += str(empty_count)
         fen_rows.append(fen_row)
-    
+    if black:
+        return '/'.join(fen_rows) + " b"
     return '/'.join(fen_rows)
 
 screenshot = pyautogui.screenshot()
