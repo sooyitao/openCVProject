@@ -3,7 +3,6 @@ import chess
 import chess.engine
 import tkinter as tk
 import threading
-import cv2
 
 from utils import find_chessboard, cut_squares, load_piece_templates, save_piece_templates, identify_all_pieces, get_fen_from_pieces
 
@@ -21,10 +20,10 @@ def save_template():
 
 def analyze_chessboard(is_black = False):
     screenshot = pyautogui.screenshot()
-    chessboard = find_chessboard(screenshot)
+    chessboard, chessboard_coords= find_chessboard(screenshot)
     
     if chessboard is not None:
-        squares = cut_squares(chessboard)
+        squares, board_coordinates = cut_squares(chessboard, chessboard_coords)
         piece_templates = load_piece_templates()
         pieces_on_board = identify_all_pieces(squares, piece_templates)
         
@@ -33,7 +32,7 @@ def analyze_chessboard(is_black = False):
         for i, piece in enumerate(pieces_on_board):
             row = i // 8
             col = i % 8 
-            row_pieces.append(piece)
+            row_pieces.append(piece) 
             if col == 7:
                 board_array.append(row_pieces)
                 row_pieces = []
@@ -44,6 +43,7 @@ def analyze_chessboard(is_black = False):
         engine = chess.engine.SimpleEngine.popen_uci("Chess.com/stockfish/stockfish-windows-x86-64-avx2.exe")
         result = engine.play(board, chess.engine.Limit(time=2.0))
         print(f"Best move: {result.move}")
+        make_move(result.move, board_coordinates)
         engine.quit()
         return result.move
     else:
@@ -69,6 +69,7 @@ def start_analysis(is_black):
     else:
         result_label.config(text="Chessboard not found or error occurred")
     set_loading(False)
+    root.focus_force()
 
 def start_save():
     result = save_template()
@@ -86,6 +87,17 @@ def set_loading(is_loading):
         root.unbind('<KeyPress>')
     else:
         root.bind('<KeyPress>', on_key_press)
+        root.focus_force()
+
+def make_move(move, board_coordinates):
+    start_square = chess.square_name(move.from_square)
+    end_square = chess.square_name(move.to_square)
+    start_coords = board_coordinates[start_square]
+    end_coords = board_coordinates[end_square]
+    pyautogui.moveTo(start_coords[0], start_coords[1], duration=0.5)
+    pyautogui.click()
+    pyautogui.moveTo(end_coords[0], end_coords[1], duration=0.5)
+    pyautogui.click()
 
 root = tk.Tk()
 root.title("Chess Analyzer")

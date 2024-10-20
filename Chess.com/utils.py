@@ -37,15 +37,16 @@ def find_chessboard(pil_image, min_side_length=100):
     if largest_square_contour is not None:
         x, y, w, h = cv2.boundingRect(largest_square_contour)
         chessboard = image[y:y+h, x:x+w]
-        return remove_background(chessboard)
+        return remove_background(chessboard), (x, y, w, h)
 
-def cut_squares(chessboard):
+def cut_squares(chessboard, chessboard_coords):
     height, width = chessboard.shape[:2]
 
     square_width = width // 8
     square_height = height // 8
 
     squares = []
+    board_coordinates = {}
 
     for row in range(8):
         for col in range(8):
@@ -57,7 +58,12 @@ def cut_squares(chessboard):
             square = chessboard[y_start:y_end, x_start:x_end]
             squares.append(square)
 
-    return squares
+            square_name = chr(ord('a') + col) + str(8 - row)
+            center_x = (x_start + x_end) // 2 + chessboard_coords[0]
+            center_y = (y_start + y_end) // 2 + chessboard_coords[1]
+            board_coordinates[square_name] = (center_x, center_y)
+
+    return squares, board_coordinates
 
 def save_piece_templates(squares, output_dir="Chess.com/piece_templates"):
     # Get the absolute path to the output directory
