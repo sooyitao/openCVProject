@@ -65,7 +65,7 @@ def cut_squares(chessboard, chessboard_coords):
 
     return squares, board_coordinates
 
-def save_piece_templates(squares, output_dir="Chess.com/piece_templates"):
+def save_piece_templates(squares, output_dir="Online Chess Analysis Application/piece_templates"):
     # Get the absolute path to the output directory
     output_dir = os.path.abspath(output_dir)
     
@@ -89,7 +89,7 @@ def save_piece_templates(squares, output_dir="Chess.com/piece_templates"):
 
 def load_piece_templates():
     # Get the absolute path to the template directory
-    template_directory = os.path.abspath('Chess.com/piece_templates/')
+    template_directory = os.path.abspath('Online Chess Analysis Application/piece_templates/')
     
     piece_templates = {
         'P': cv2.imread(os.path.join(template_directory, 'white_pawn.jpg')),

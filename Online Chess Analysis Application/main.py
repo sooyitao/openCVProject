@@ -8,9 +8,9 @@ from utils import find_chessboard, cut_squares, load_piece_templates, save_piece
 
 def save_template():
     screenshot = pyautogui.screenshot()
-    chessboard = find_chessboard(screenshot)
+    chessboard, chessboard_coords = find_chessboard(screenshot)
     if chessboard is not None:
-        squares = cut_squares(chessboard)
+        squares, board_coordinates = cut_squares(chessboard, chessboard_coords)
         save_piece_templates(squares)
         return("Template saved")
     else:
@@ -19,35 +19,39 @@ def save_template():
 
 
 def analyze_chessboard(is_black = False):
-    screenshot = pyautogui.screenshot()
-    chessboard, chessboard_coords= find_chessboard(screenshot)
-    
-    if chessboard is not None:
-        squares, board_coordinates = cut_squares(chessboard, chessboard_coords)
-        piece_templates = load_piece_templates()
-        pieces_on_board = identify_all_pieces(squares, piece_templates)
+    try:
+        screenshot = pyautogui.screenshot()
+        chessboard, chessboard_coords= find_chessboard(screenshot)
         
-        board_array = []
-        row_pieces = []
-        for i, piece in enumerate(pieces_on_board):
-            row = i // 8
-            col = i % 8 
-            row_pieces.append(piece) 
-            if col == 7:
-                board_array.append(row_pieces)
-                row_pieces = []
-        
-        FEN = get_fen_from_pieces(board_array, is_black)
-        print(f"FEN: {FEN}")
-        board = chess.Board(FEN)
-        engine = chess.engine.SimpleEngine.popen_uci("Chess.com/stockfish/stockfish-windows-x86-64-avx2.exe")
-        result = engine.play(board, chess.engine.Limit(time=2.0))
-        print(f"Best move: {result.move}")
-        make_move(result.move, board_coordinates)
-        engine.quit()
-        return result.move
-    else:
-        print("Chessboard not found")
+        if chessboard is not None:
+            squares, board_coordinates = cut_squares(chessboard, chessboard_coords)
+            piece_templates = load_piece_templates()
+            pieces_on_board = identify_all_pieces(squares, piece_templates)
+            
+            board_array = []
+            row_pieces = []
+            for i, piece in enumerate(pieces_on_board):
+                row = i // 8
+                col = i % 8 
+                row_pieces.append(piece) 
+                if col == 7:
+                    board_array.append(row_pieces)
+                    row_pieces = []
+            
+            FEN = get_fen_from_pieces(board_array, is_black)
+            print(f"FEN: {FEN}")
+            board = chess.Board(FEN)
+            engine = chess.engine.SimpleEngine.popen_uci("Online Chess Analysis Application/stockfish/stockfish-windows-x86-64-avx2.exe")
+            result = engine.play(board, chess.engine.Limit(time=2.0))
+            print(f"Best move: {result.move}")
+            make_move(result.move, board_coordinates)
+            engine.quit()
+            return result.move
+        else:
+            print("Chessboard not found")
+            return None
+    except Exception as e:
+        print(f"Error occurred: {e}")
         return None
     
 def on_key_press(event):
