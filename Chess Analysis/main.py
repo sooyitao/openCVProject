@@ -41,7 +41,7 @@ def analyze_chessboard(is_black = False):
             FEN = get_fen_from_pieces(board_array, is_black)
             print(f"FEN: {FEN}")
             board = chess.Board(FEN)
-            engine = chess.engine.SimpleEngine.popen_uci("Online Chess Analysis Application/stockfish/stockfish-windows-x86-64-avx2.exe")
+            engine = chess.engine.SimpleEngine.popen_uci("Chess Analysis/stockfish/stockfish-windows-x86-64-avx2.exe")
             result = engine.play(board, chess.engine.Limit(time=2.0))
             print(f"Best move: {result.move}")
             make_move(result.move, board_coordinates)
