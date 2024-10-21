@@ -24,7 +24,7 @@ A Python application that analyzes a chessboard using image processing and chess
 
    ```bash
    git clone https://github.com/sooyitao/openCVProject
-   cd Online Chess Analysis Application
+   cd Chess Analysis
 
 2. Install the required packages:
 
